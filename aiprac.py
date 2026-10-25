@@ -206,3 +206,146 @@ words = ["cars", "playing", "mice", "running"]
 
 for word in words:
     print(lm.lemmatize(word))
+
+
+# =====================================================================
+#**Text Classification with Scikit-Learn**
+# =====================================================================
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+
+# Training data
+text = ["I love this", "This is good", "I hate this", "This is bad"]
+label = ["Positive", "Positive", "Negative", "Negative"]
+
+# Convert text into numbers
+cv = CountVectorizer()
+X = cv.fit_transform(text)
+
+# Train the model
+model = MultinomialNB()
+model.fit(X, label)
+
+# Test new text
+test = ["I love good"]
+test_data = cv.transform(test)
+
+# Predict result
+print("Classification:", model.predict(test_data)[0])
+# =====================================================================
+#Program to classify the email as SPAM and HAM (NOT SPAM)
+# =====================================================================
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+
+emails = [
+    "Win money now",
+    "Claim your free prize",
+    "Hello how are you",
+    "Let's meet tomorrow"
+]
+
+labels = ["Spam", "Spam", "Ham", "Ham"]
+
+cv = CountVectorizer()
+X = cv.fit_transform(emails)
+
+model = MultinomialNB()
+model.fit(X, labels)
+
+test = ["Win free money"]
+X_test = cv.transform(test)
+
+print("Email is:", model.predict(X_test)[0])
+# =====================================================================
+#Program to classify the product review into positive and negative.
+# =====================================================================
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+
+reviews = [
+    "This product is good",
+    "I love this product",
+    "This product is bad",
+    "I hate this product"
+]
+
+labels = ["Positive", "Positive", "Negative", "Negative"]
+
+cv = CountVectorizer()
+X = cv.fit_transform(reviews)
+
+model = MultinomialNB()
+model.fit(X, labels)
+
+test = ["This product is good"]
+X_test = cv.transform(test)
+
+print("Review:", test[0])
+print("Sentiment:", model.predict(X_test)[0])
+# =====================================================================
+#Working with Huggingface and Gemini LLMs 
+# =====================================================================
+#Hugging face for Text Generation
+from transformers import pipeline
+
+generator = pipeline("text-generation",model="gpt2")
+prompt = "text generation is very useful because"
+output = generator(prompt,max_new_tokens=20)
+print(output[0]["generated_text"])
+
+#Hugging face for Text summarization
+
+from transformers import pipeline
+summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
+articles = [
+    "Natural Language Processing (NLP) is a field of artificial intelligence that focuses on the interaction between computers and human language. It enables tasks such as text classification, translation, summarization, and question answering. Modern NLP often uses transformer-based models.",
+
+    "Mindfulness is a practice of being aware of the present moment. Research shows it helps reduce stress, improves concentration, and supports emotional regulation. Many schools and workplaces now include mindfulness exercises into daily routines."
+]
+summaries = summarizer(
+    articles,
+    max_new_tokens=50,
+    min_length=15,
+    do_sample=False
+)
+for article, summary in zip(articles, summaries):
+    print("Original:", article)
+    print("\nSummary:", summary['summary_text'], "\n")
+
+#Huggingface for Sentiment Analysis
+
+from transformers import pipeline
+
+sentiment = pipeline("sentiment-analysis")
+
+texts = [
+    "I love teaching Natural Language Processing!",
+    "This assignment is terribly confusing.",
+    "The workshop was very helpful and fun!",
+    "I didn't like the food",
+    "I loved the pizza"
+]
+
+for t in texts:
+    result = sentiment(t)[0]
+    print(f"Text: {t}\n -> Label: {result['label']}, Score: {result['score']:.4f}\n")
+    
+#Gemini for Text Generation(pip install google-generativeai)
+
+import google.generativeai as genai
+
+API_KEY = "YOUR_GEMINI_API_KEY"
+
+genai.configure(api_key=API_KEY)
+
+model = genai.GenerativeModel("gemini-1.5-flash")
+
+prompt = "Write a short poem about sunrise."
+response = model.generate_content(prompt)
+
+print("Gemini Response:")
+print(response.text)
