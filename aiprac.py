@@ -316,7 +316,7 @@ for article, summary in zip(articles, summaries):
     print("Original:", article)
     print("\nSummary:", summary['summary_text'], "\n")
 
-#Huggingface for Sentiment Analysis
+#Huggingface for Sentiment Analysis(pip install transformers torch)
 
 from transformers import pipeline
 
