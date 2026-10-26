@@ -239,53 +239,11 @@ print("Classification:", model.predict(test_data)[0])
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
-
-emails = [
-    "Win money now",
-    "Claim your free prize",
-    "Hello how are you",
-    "Let's meet tomorrow"
-]
-
-labels = ["Spam", "Spam", "Ham", "Ham"]
-
-cv = CountVectorizer()
-X = cv.fit_transform(emails)
-
-model = MultinomialNB()
-model.fit(X, labels)
-
-test = ["Win free money"]
-X_test = cv.transform(test)
-
-print("Email is:", model.predict(X_test)[0])
-# =====================================================================
-#Program to classify the product review into positive and negative.
-# =====================================================================
-
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.naive_bayes import MultinomialNB
-
-reviews = [
-    "This product is good",
-    "I love this product",
-    "This product is bad",
-    "I hate this product"
-]
-
-labels = ["Positive", "Positive", "Negative", "Negative"]
-
-cv = CountVectorizer()
-X = cv.fit_transform(reviews)
-
-model = MultinomialNB()
-model.fit(X, labels)
-
-test = ["This product is good"]
-X_test = cv.transform(test)
-
-print("Review:", test[0])
-print("Sentiment:", model.predict(X_test)[0])
+from sklearn.pipeline import make_pipeline
+text=["free win", "hi friend"]
+label=["spam", "ham"]
+model=make_pipeline(CountVectorizer(), MultinomialNB()).fit(text,label)
+print("classification:-",model.predict(["free win"]))
 # =====================================================================
 #Working with Huggingface and Gemini LLMs 
 # =====================================================================
