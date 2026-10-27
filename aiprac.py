@@ -66,7 +66,41 @@ for ch in enc:
 
 print("Decrypted:", dec)
 # =====================================================================
-#Rsa
+#Columnar
+# =====================================================================
+def col(text, key, mode='enc'):
+    k = len(key)
+    order = sorted(range(k), key=lambda i: key[i])
+
+    if mode == 'enc':
+        while len(text) % k != 0:
+            text += 'X'
+        	
+        res = ""
+        for i in order:
+            res += text[i::k]
+        return res
+
+    else:
+        r = len(text) // k
+        cols = [""] * k
+        
+        for i in order:
+            cols[i] = text[:r]
+            text = text[r:]  
+            
+        res = ""
+        for row in zip(*cols):
+            res += "".join(row)
+        return res
+text = 'bananachair'
+key = 'ball'
+enc = col(text, key, mode='enc')
+print(f"enc is {enc}")
+dec = col(enc, key, mode='dec')
+print(f"dec is {dec}")
+# =====================================================================
+#Rsa(Rivest–Shamir–Adleman)
 # =====================================================================
 import hashlib
 
@@ -203,3 +237,132 @@ def playfair_encrypt(plaintext, key):
 
 cipher = playfair_encrypt("Hello TYCS", "MONARCHY")
 print(cipher)
+# =====================================================================
+#Sha1 signature(Secure Hash Algorithm 1.)
+# =====================================================================
+#for message
+import hmac
+import hashlib
+
+key = input("Enter secret key: ")
+message = input("Enter message: ")
+
+signature = hmac.new(key.encode(), message.encode(), hashlib.sha1).hexdigest()
+
+print("HMAC-SHA1 Signature:", signature)
+
+#for file 
+for file
+import hmac
+import hashlib
+key = input("Enter secret key: ")
+file = input("Enter file path: ")
+try:
+    with open(file, 'rb') as f:
+        data = f.read()
+    signature = hmac.new(key.encode(), data, hashlib.sha1).hexdigest()
+    print("HMAC-SHA1 Signature:", signature)
+except FileNotFoundError:
+    print("File not found")
+# =====================================================================
+#DES(Data Encryption Standard)
+# =====================================================================
+import base64
+from Crypto.Cipher import DES
+from Crypto.Random import get_random_bytes
+from Crypto.Util.Padding import pad, unpad
+
+key = get_random_bytes(8)
+BS = DES.block_size  
+
+def des_run(text, key, mode, action='enc'):
+    needs_pad = mode in (DES.MODE_ECB, DES.MODE_CBC)
+    
+    if action == 'enc':
+        cipher = DES.new(key, mode)
+        data = pad(text.encode(), BS) if needs_pad else text.encode()
+        iv = b"" if mode == DES.MODE_ECB else cipher.iv
+        return base64.b64encode(iv + cipher.encrypt(data)).decode()
+        
+    else:
+        raw = base64.b64decode(text)
+        cipher = DES.new(key, mode) if mode == DES.MODE_ECB else DES.new(key, mode, iv=raw[:BS])
+        ct = raw if mode == DES.MODE_ECB else raw[BS:]
+        
+        dec = cipher.decrypt(ct)
+        return (unpad(dec, BS) if needs_pad else dec).decode()
+
+message = "Hello DES! This is a test message."
+modes = {
+    "ECB": DES.MODE_ECB,
+    "CBC": DES.MODE_CBC,
+    "CFB": DES.MODE_CFB,
+    "OFB": DES.MODE_OFB
+}
+
+for name, mode in modes.items():
+    enc = des_run(message, key, mode, 'enc')
+    dec = des_run(enc, key, mode, 'dec')
+    print(f"{name} Encrypted: {enc}")
+    print(f"{name} Decrypted: {dec}\n")
+# =====================================================================
+#AES(Advanced Encryption Standard)
+# =====================================================================
+import base64
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+from Crypto.Util.Padding import pad, unpad
+key = get_random_bytes(32)
+BS = AES.block_size  
+
+def aes_run(text, key, mode, action='enc'):
+    needs_pad = mode in (AES.MODE_ECB, AES.MODE_CBC)
+    
+    if action == 'enc':
+        cipher = AES.new(key, mode)
+        data = pad(text.encode(), BS) if needs_pad else text.encode()
+        
+        iv = b"" if mode == AES.MODE_ECB else cipher.iv
+        return base64.b64encode(iv + cipher.encrypt(data)).decode()
+        
+    else:
+        raw = base64.b64decode(text)
+       
+        cipher = AES.new(key, mode) if mode == AES.MODE_ECB else AES.new(key, mode, iv=raw[:BS])
+        ct = raw if mode == AES.MODE_ECB else raw[BS:]
+        
+        dec = cipher.decrypt(ct)
+        return (unpad(dec, BS) if needs_pad else dec).decode()
+
+
+message = "Hello AES! This is a test message."
+modes = {
+    "ECB": AES.MODE_ECB,
+    "CBC": AES.MODE_CBC,
+    "CFB": AES.MODE_CFB,
+    "OFB": AES.MODE_OFB
+}
+
+for name, mode in modes.items():
+    enc = aes_run(message, key, mode, 'enc')
+    dec = aes_run(enc, key, mode, 'dec')
+    print(f"{name} Encrypted: {enc}")
+    print(f"{name} Decrypted: {dec}\n")
+# =====================================================================
+#SSL(Secure Sockets Layer)
+# =====================================================================
+#cmd:- openssl req -x509 -keyout key.pem -out cert.pem -nodes -subj "/CN=a"
+#server
+import socket, ssl
+ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+ctx.load_cert_chain("cert.pem", "key.pem")
+with ctx.wrap_socket(socket.create_server(("localhost", 8443))) as s:
+    conn, _ = s.accept()
+    print("Received:", conn.recv(1024).decode())
+    conn.send(b"Hello from server!")
+#client
+import socket, ssl
+ctx = ssl._create_unverified_context()
+with ctx.wrap_socket(socket.create_connection(("localhost", 8443))) as s:
+    s.send(b"Hello secure server!")
+    print("Server replied:", s.recv(1024).decode())
