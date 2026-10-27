@@ -1,309 +1,205 @@
 # =====================================================================
-#DFS
+#Perform the Frequency Analysis Attack on a Monoalphabetic Cipher
 # =====================================================================
-graph = {
-    1: [2], 2: [1, 3, 6, 8], 3: [2, 4, 6, 7], 4: [3, 6],
-    5: [6], 6: [2, 3, 4, 5], 7: [3], 8: [2]
-}
+text = input("Enter cipher text: ").upper()
 
-def dfs(node, visited=[]):
-    if node not in visited:
-        visited.append(node)
-        for neighbor in graph[node]:
-            dfs(neighbor, visited)
-    return visited
+freq = {}
 
-print("Graph Representation:\n")
-for node, neighbors in graph.items():
-    print(f"{node} -> {neighbors}")
+for ch in text:
+    if ch.isalpha():
+        freq[ch] = freq.get(ch, 0) + 1
 
-print("\nDFS VISITED LIST (Starting from 1):\n")
-print(dfs(1))
+print("Letter Frequencies:")
 
+for ch in sorted(freq, key=freq.get, reverse=True):
+    print(ch, ":", freq[ch])
 # =====================================================================
-#BFS
+#Caesar Cipher 
 # =====================================================================
+text = input("Enter message: ").upper()
+key = int(input("Enter key: "))
 
-graph = {
-    'A': ['B', 'C'], 'B': ['A', 'D', 'E'], 'C': ['A', 'F'],
-    'D': ['B'], 'E': ['B', 'F'], 'F': ['C', 'E']
-}
+enc = ""
 
-def bfs(start):
-    visited, queue = {start}, [start]
-    print("BFS Traversal Order:")
-    while queue:
-        node = queue.pop(0)
-        print(node, end=" ")
-        for n in graph[node]:
-            if n not in visited:
-                visited.add(n)
-                queue.append(n)
+for ch in text:
+    if ch.isalpha():
+        enc += chr((ord(ch) - 65 + key) % 26 + 65)
+    else:
+        enc += ch
 
-bfs('A')
+print("Encrypted:", enc)
 
+dec = ""
 
+for ch in enc:
+    if ch.isalpha():
+        dec += chr((ord(ch) - 65 - key) % 26 + 65)
+    else:
+        dec += ch
 
+print("Decrypted:", dec)
 # =====================================================================
-#UCS uniform cost search algorithm
+#Monoalphabetic Cipher 
 # =====================================================================
+text = input("Enter message: ").upper()
 
-import heapq
+abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+key = "QWERTYUIOPASDFGHJKLZXCVBNM"
 
-graph = {
-    'arad': {'sibiu': 140, 'zerind': 75, 'timisoara': 118},
-    'zerind': {'arad': 75, 'oradea': 71},
-    'oradea': {'zerind': 71, 'sibiu': 151},
-    'sibiu': {'arad': 140, 'oradea': 151, 'fagaras': 99, 'rimnicu vilcea': 80},
-    'fagaras': {'sibiu': 99, 'bucharest': 211},
-    'rimnicu vilcea': {'sibiu': 80, 'craiova': 146, 'pitesti': 97},
-    'pitesti': {'rimnicu vilcea': 97, 'craiova': 138, 'bucharest': 101},
-    'bucharest': {'fagaras': 211, 'pitesti': 101}
-}
+enc = ""
 
-def ucs(start, goal):
-    pq = [(0, start, [start])]
-    visited = set()
+for ch in text:
+    if ch in abc:
+        enc += key[abc.index(ch)]
+    else:
+        enc += ch
 
-    while pq:
-        cost, city, path = heapq.heappop(pq)
+print("Encrypted:", enc)
 
-        if city == goal:
-            print("Path:", path)
-            print("Cost:", cost)
-            return
+dec = ""
 
-        if city not in visited:
-            visited.add(city)
+for ch in enc:
+    if ch in key:
+        dec += abc[key.index(ch)]
+    else:
+        dec += ch
 
-            for next_city, distance in graph[city].items():
-                if next_city not in visited:
-                    heapq.heappush(
-                        pq,
-                        (cost + distance, next_city,
-                         path + [next_city])
-                    )
+print("Decrypted:", dec)
+# =====================================================================
+#Rsa
+# =====================================================================
+import hashlib
 
-    print("No path found")
+p = int(input("enter no:-"))
+q = int(input("enter no:-"))
 
-start = input("Enter source: ").lower()
-goal = input("Enter goal: ").lower()
+n = p * q
+phi = (p - 1) * (q - 1)
 
-if start in graph and goal in graph:
-    ucs(start, goal)
+e = 3
+d = 7
+
+message = 5
+
+
+signature = (message ** d) % n
+print("Digital Signature:", signature)
+
+verify = (signature ** e) % n
+print("Verified Message:", verify)
+
+if verify == message:
+    print("Signature is Valid")
 else:
-    print("City does not exist")
-
+    print("Signature is not Invalid")
 # =====================================================================
-#A* algorithm
+#Diffie hellman 
 # =====================================================================
+p = int(input("enter no:-"))#23
+g = int(input("enter no:-"))#5
 
-from queue import PriorityQueue
+a = 6
+b = 15
 
-graph = {
-    'Arad': {'Sibiu': 140, 'Zerind': 75},
-    'Sibiu': {'Arad': 140, 'Fagaras': 99, 'Pitesti': 97},
-    'Zerind': {'Arad': 75},
-    'Fagaras': {'Sibiu': 99, 'Bucharest': 211},
-    'Pitesti': {'Sibiu': 97, 'Bucharest': 101},
-    'Bucharest': {'Fagaras': 211, 'Pitesti': 101}
-}
+A = (g ** a) % p
+B = (g ** b) % p
 
-h = {
-    'Arad': 366, 'Sibiu': 253, 'Zerind': 374,
-    'Fagaras': 176, 'Pitesti': 100, 'Bucharest': 0
-}
+key1 = (B ** a) % p
+key2 = (A ** b) % p
 
-def astar(start, goal):
-    pq = PriorityQueue()
-    pq.put((h[start], 0, start, [start]))
-    visited = set()
-
-    while not pq.empty():
-        f, cost, city, path = pq.get()
-
-        if city == goal:
-            print("Path:", path)
-            print("Cost:", cost)
-            return
-
-        if city not in visited:
-            visited.add(city)
-
-            for next_city, distance in graph[city].items():
-                if next_city not in visited:
-                    g = cost + distance
-                    f = g + h[next_city]
-                    pq.put((f, g, next_city, path + [next_city]))
-
-    print("No path found")
-
-start = input("Enter source: ").title()
-goal = input("Enter goal: ").title()
-
-if start in graph and goal in graph:
-    astar(start, goal)
-else:
-    print("City does not exist")
+print("Alice's public key:", A)
+print("Bob's public key:", B)
+print("Alice's secret key:", key1)
+print("Bob's secret key:", key2)
 # =====================================================================
-#QUEEN
+#Vernam cipher
 # =====================================================================
+def vernam_encrypt(plaintext, key):
+    if len(plaintext) != len(key):
+        raise ValueError("Key must be the same length as the plaintext.")
+    return ''.join(chr(ord(p) ^ ord(k)) for p, k in zip(plaintext, key))
 
-def solve_n_queens(n, col=0, board=[]):
-    if col == n:
-        return [board]
-    return [
-        sol for row in range(n)
-        if all(r != row and abs(r - row) != col - c for c, r in enumerate(board))
-        for sol in solve_n_queens(n, col + 1, board + [row])
-    ]
-
-n = int(input("Enter board size (e.g., 4 or 8): "))
-results = solve_n_queens(n)
-print(f"\nFound {len(results)} solutions!\n")
-
-for i, board in enumerate(results, 1):
-    print(f"--- Solution #{i} ---")
-    for r in board:
-        print(". " * r + "Q " + ". " * (n - r - 1))
-    print()
-
-# =====================================================================
-#NLTK text processing and preprocessing
-# =====================================================================
-#tokenization
-
-import nltk
-from nltk.tokenize import word_tokenize
-
-nltk.download('punkt')
-nltk.download('punkt_tab')
-
-text = "I am learning Python programming"
-
-print(word_tokenize(text))
-#stemming
-
-from nltk.stem import PorterStemmer
-
-ps = PorterStemmer()
-
-words = ["playing", "played", "plays", "running"]
-
-for word in words:
-    print(ps.stem(word))
-#Lemmatization
-
-import nltk
-from nltk.stem import WordNetLemmatizer
-
-nltk.download('wordnet')
-nltk.download('omw-1.4')
-
-lm = WordNetLemmatizer()
-
-words = ["cars", "playing", "mice", "running"]
-
-for word in words:
-    print(lm.lemmatize(word))
-
-
-# =====================================================================
-#**Text Classification with Scikit-Learn**
-# =====================================================================
-
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.naive_bayes import MultinomialNB
-
-# Training data
-text = ["I love this", "This is good", "I hate this", "This is bad"]
-label = ["Positive", "Positive", "Negative", "Negative"]
-
-# Convert text into numbers
-cv = CountVectorizer()
-X = cv.fit_transform(text)
-
-# Train the model
-model = MultinomialNB()
-model.fit(X, label)
-
-# Test new text
-test = ["I love good"]
-test_data = cv.transform(test)
-
-# Predict result
-print("Classification:", model.predict(test_data)[0])
-# =====================================================================
-#Program to classify the email as SPAM and HAM (NOT SPAM)
-# =====================================================================
-
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.pipeline import make_pipeline
-text=["free win", "hi friend"]
-label=["spam", "ham"]
-model=make_pipeline(CountVectorizer(), MultinomialNB()).fit(text,label)
-print("classification:-",model.predict(["free win"]))
-# =====================================================================
-#Working with Huggingface and Gemini LLMs 
-# =====================================================================
-#Hugging face for Text Generation
-from transformers import pipeline
-
-generator = pipeline("text-generation",model="gpt2")
-prompt = "text generation is very useful because"
-output = generator(prompt,max_new_tokens=20)
-print(output[0]["generated_text"])
-
-#Hugging face for Text summarization
-
-from transformers import pipeline
-summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
-articles = [
-    "Natural Language Processing (NLP) is a field of artificial intelligence that focuses on the interaction between computers and human language. It enables tasks such as text classification, translation, summarization, and question answering. Modern NLP often uses transformer-based models.",
-
-    "Mindfulness is a practice of being aware of the present moment. Research shows it helps reduce stress, improves concentration, and supports emotional regulation. Many schools and workplaces now include mindfulness exercises into daily routines."
-]
-summaries = summarizer(
-    articles,
-    max_new_tokens=50,
-    min_length=15,
-    do_sample=False
-)
-for article, summary in zip(articles, summaries):
-    print("Original:", article)
-    print("\nSummary:", summary['summary_text'], "\n")
-
-#Huggingface for Sentiment Analysis(pip install transformers torch)
-
-from transformers import pipeline
-
-sentiment = pipeline("sentiment-analysis")
-
-texts = [
-    "I love teaching Natural Language Processing!",
-    "This assignment is terribly confusing.",
-    "The workshop was very helpful and fun!",
-    "I didn't like the food",
-    "I loved the pizza"
-]
-
-for t in texts:
-    result = sentiment(t)[0]
-    print(f"Text: {t}\n -> Label: {result['label']}, Score: {result['score']:.4f}\n")
+def vernam_decrypt(ciphertext, key):
     
-#Gemini for Text Generation(pip install google-generativeai)
+    return vernam_encrypt(ciphertext, key)
 
-import google.generativeai as genai
 
-API_KEY = "YOUR_GEMINI_API_KEY"
+plaintext = "HELLO"
+key = "XMCKL"
 
-genai.configure(api_key=API_KEY)
 
-model = genai.GenerativeModel("gemini-1.5-flash")
+ciphertext = vernam_encrypt(plaintext, key)
+print("Encrypted (Raw):", repr(ciphertext)) 
 
-prompt = "Write a short poem about sunrise."
-response = model.generate_content(prompt)
+decrypted = vernam_decrypt(ciphertext, key)
+print("Decrypted:     ", decrypted)
+# =====================================================================
+#Playfair cipher
+# =====================================================================
+def prepare_key_matrix(key):
+    key = key.upper().replace("J", "I")
+    seen = set()
+    key_matrix = []
+    for char in key:
+        if char not in seen and char.isalpha():
+            seen.add(char)
+            key_matrix.append(char)
+    for char in "ABCDEFGHIKLMNOPQRSTUVWXYZ":
+        if char not in seen:
+            seen.add(char)
+            key_matrix.append(char)
+    return [key_matrix[i:i+5] for i in range(0, 25, 5)]
 
-print("Gemini Response:")
-print(response.text)
+def find_position(matrix, char):
+    for row_idx, row in enumerate(matrix):
+        if char in row:
+            return row_idx, row.index(char)
+    return None, None
+
+def encrypt_digraph(digraph, matrix):
+    a, b = digraph
+    row1, col1 = find_position(matrix, a)
+    row2, col2 = find_position(matrix, b)
+    if row1 == row2:
+        return matrix[row1][(col1 + 1) % 5] + matrix[row2][(col2 + 1) % 5]
+    elif col1 == col2:
+        return matrix[(row1 + 1) % 5][col1] + matrix[(row2 + 1) % 5][col2]
+    else:
+        return matrix[row1][col2] + matrix[row2][col1]
+
+def prepare_plaintext(text):
+    text = text.upper().replace("J", "I")
+    cleaned = []
+    i = 0
+    while i < len(text):
+        if not text[i].isalpha():
+            i += 1
+            continue
+        a = text[i]
+        
+        next_char_idx = i + 1
+        while next_char_idx < len(text) and not text[next_char_idx].isalpha():
+            next_char_idx += 1
+            
+        if next_char_idx < len(text):
+            b = text[next_char_idx]
+            if a == b:
+                cleaned.append(a + 'X')
+                i += 1
+            else:
+                cleaned.append(a + b)
+                i = next_char_idx + 1
+        else:
+            cleaned.append(a + 'X')
+            i += 1
+            
+    return cleaned
+
+def playfair_encrypt(plaintext, key):
+    matrix = prepare_key_matrix(key)
+    digraphs = prepare_plaintext(plaintext)
+    ciphertext = ''.join(encrypt_digraph(pair, matrix) for pair in digraphs)
+    return ciphertext
+
+cipher = playfair_encrypt("Hello TYCS", "MONARCHY")
+print(cipher)
