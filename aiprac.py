@@ -1,4 +1,30 @@
 # =====================================================================
+#combined
+# =====================================================================
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+df = pd.read_csv("data.csv")
+df.columns = df.columns.str.strip().str.upper()
+# 1. Dates & Text Cleaning
+if "DOB" in df.columns:
+    df["DOB"] = pd.to_datetime(df["DOB"], errors="coerce").fillna("1900-01-01")
+cat_cols = df.select_dtypes(include=["object"]).columns
+df[cat_cols] = df[cat_cols].ffill().bfill().fillna("Unknown")
+# 2. Numeric: Coerce strings to NaN, remove negatives, cap outliers (IQR)
+num_cols = ["AGE", "MARKS", "PRICE", "QUANTITY", "DISCOUNT"]
+for col in num_cols:
+    s = pd.to_numeric(df[col], errors="coerce").mask(lambda x: x < 0)
+    q1, q3 = s.quantile(0.25), s.quantile(0.75)
+    df[col] = s.clip(q1 - 1.5 * (q3 - q1), q3 + 1.5 * (q3 - q1)).fillna(s.median())
+# 3. Scaling
+for col in ["MARKS", "AGE", "PRICE"]:
+    df[f"{col}_MINMAX"] = MinMaxScaler().fit_transform(df[[col]]) 
+    df[f"{col}_ZSCORE"] = StandardScaler().fit_transform(df[[col]])
+# 4. Save
+df.dropna(how="all").to_csv("cleaned_data.csv", index=False)
+print(df.head())
+
+# =====================================================================
 #Data Cleaning-Missing Values
 # =====================================================================
 import pandas as pd
@@ -387,7 +413,7 @@ print(r[["antecedents", "consequents", "support", "confidence", "lift"]].head())
 #Association II-FP Tree
 # =====================================================================
 import pyfpgrowth, csv
-data = [[x for x in r if x] for r in csv.reader(open('Book1.csv'))][1:]
+data = [r.split(", ") for r in pd.read_csv("groceries.csv")["Items"]] 
 print("Some records:", data[:10])
 patterns = pyfpgrowth.find_frequent_patterns(data, 2)
 print("Patterns:", patterns)
