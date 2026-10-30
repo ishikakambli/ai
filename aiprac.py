@@ -417,12 +417,14 @@ data = [r.split(", ") for r in pd.read_csv("groceries.csv")["Items"]]
 print("Some records:", data[:10])
 patterns = pyfpgrowth.find_frequent_patterns(data, 2)
 print("Patterns:", patterns)
+rules = pyfpgrowth.generate_association_rules(patterns, 0.7)
+print("rules output",rules)
 # =====================================================================
 #Association -III
 # =====================================================================
 import numpy as np
 import pandas as pd
-mport pyfpgrowth
+import pyfpgrowth
 df = pd.read_csv("diabetes.csv")
 baskets = pd.DataFrame({
     "Glucose":  np.where(df["Glucose"] >= 126, "High_Glucose", "Normal_Glucose"),
@@ -433,5 +435,7 @@ baskets = pd.DataFrame({
 trans = baskets.values.tolist()
 print("Some Records:\n", *trans[:10], sep="\n")
 patterns = pyfpgrowth.find_frequent_patterns(trans, 200)
-print("\nFrequent Patterns:\n", pd.Series(patterns))
+for itemset, count in patterns.items():
+    print(f"{', '.join(itemset)}: {count}")
+
 
