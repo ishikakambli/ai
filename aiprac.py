@@ -73,3 +73,15 @@ print(s.recv(1024).decode())
 # =====================================================================
 #tcp.port==8080(zenmap)
 # =====================================================================
+
+# =====================================================================
+#password cracking 
+# =====================================================================
+#. Open Command Prompt.
+#5. Change to the run directory: cd C:\Tools\John\run 
+#6.Once it's installed, you can explore its features using:  john --help 
+#words.txt
+python -c "import hashlib; print(hashlib.sha256(b'cake').hexdigest())"
+#hash cd 
+#hashcat -m 1400 -a 0 hash.txt appol.txt
+#hashcat -m 1400 -a 0 hash.txt appol.txt --show
